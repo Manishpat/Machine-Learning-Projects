@@ -1,0 +1,22 @@
+%% Question 2
+
+clc
+clear
+close
+%% Data initialization /scaling
+X =  xlsread('ghg-concentrations_1984-2014','B6:E36');
+Y = xlsread('ghg-concentrations_1984-2014','G6:G36');
+Z=[X Y];
+N = size(X,1);
+dat_1 = (Z - mean(Z))./(zeros(size(Z))+std(Z));
+% Correlation 
+%TO CHECK HOW TEMERATURE CORRELATED WITH GAS LEVEL.if it is positive
+%implies they are positively correlated.
+
+sum(dat_1(:,1).*dat_1(:,end))/N
+sum(dat_1(:,2).*dat_1(:,end))/N
+sum(dat_1(:,3).*dat_1(:,end))/N
+sum(dat_1(:,4).*dat_1(:,end))/N
+%%  Scaling of data in the y column
+[reg_1] = TLS(Z);
+[reg_1_OLS] =OLS(X,Y);
