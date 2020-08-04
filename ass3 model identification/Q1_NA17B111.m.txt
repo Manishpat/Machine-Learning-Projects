@@ -1,0 +1,112 @@
+clc
+close all
+
+n_samples = 1000;
+n_relations = 3;
+
+data = load('C:\Users\Manish Patidar\Desktop\CH5440-master\flowdata3.mat'); 
+Fmeas = data.Fmeas;
+Atrue = data.Atrue;
+eigenvals = eigs(cov(Fmeas)); % print eigenvals
+%using pca
+[u s v] = svd(Fmeas, 'econ'); 
+Acalc = v(:,end - n_relations + 1:end)'; % last 3 as we knoe no of relationships and that corresponds to smallest eigan values
+
+
+% calculating regression matrices
+Acalc_regression = Acalc(:,[1 2 4])\(-Acalc(:,[3 5]));
+Atrue_regression = Atrue(:,[1 2 4])\(- Atrue(:,[3 5]));
+
+max_diff = 0;
+% finding the maximum absolute differnce between them
+for i = 1:3
+    for j = 1:2
+        if max_diff < abs(Acalc_regression(i,j) - Atrue_regression(i,j))
+            max_diff = abs(Acalc_regression(i,j) - Atrue_regression(i,j));
+        end
+    end
+end
+%n=min(abs(Acalc_regression - Atrue_regression))
+max_diff
+% print maxabs and angle
+theta = subspace(Atrue', Acalc')*180/pi
+
+% IPCA 
+A_estim = Acalc;
+niterations = 100;
+%using stdest fn that gives A estimated and data as argument and gives the
+%standard deviations 
+for i = 1:niterations
+    stdevs = stdest(A_estim, Fmeas');
+    Fmeas = Fmeas./(ones(n_samples,1)*stdevs');
+    [u s v] = svd(Fmeas, 'econ'); 
+    A_estim = v(:,end - n_relations + 1:end)';
+    A_estim = A_estim./(ones(n_relations,1)*stdevs');
+    Fmeas = Fmeas.*(ones(n_samples,1)*stdevs');
+end
+ 
+stdevs = stdest(A_estim, Fmeas');
+theta = 180*subspace(Atrue', A_estim')/pi
+Fscaled = Fmeas./(ones(n_samples,1)*stdevs');
+eigenvalues = eigs(cov(Fscaled))
+
+Aestim_reg = A_estim(:,[1 2 4])\(-A_estim(:,[3 5]));
+
+max_diff = 0;
+for i = 1:3
+    for j = 1:2
+        if max_diff < abs(Aestim_reg(i,j) - Atrue_regression(i,j))
+            max_diff = abs(Aestim_reg(i,j) - Atrue_regression(i,j));
+        end
+    end
+end
+
+max_diff;
+
+% Wrong IPCA and the information given in question
+n_relations = 4;
+[u s v] = svd(Fmeas, 'econ'); 
+Acalc = v(:,end - n_relations + 1:end)'; % taking last 4
+A_estim = Acalc;
+
+niterations = 100;
+for i = 1:niterations
+    stdevs = stdest(A_estim, Fmeas');
+    Fmeas = Fmeas./(ones(n_samples,1)*stdevs');
+    [u s v] = svd(Fmeas, 'econ'); 
+    A_estim = v(:,end - n_relations + 1:end)';
+    A_estim = A_estim./(ones(n_relations,1)*stdevs');
+    Fmeas = Fmeas.*(ones(n_samples,1)*stdevs');
+end
+
+stdevs = stdest(A_estim, Fmeas');
+theta = 180*subspace(Atrue', A_estim')/pi;
+Fscaled = Fmeas./(ones(n_samples,1)*stdevs');
+covar = cov(Fscaled);
+eigenvalues = eigs(covar)
+
+%for off diagonal element 
+
+% didnt able to improve the function correctly but its the code after
+% improve the fn
+
+n_relations = 3;
+[u s v] = svd(Fmeas, 'econ'); 
+Acalc = v(:,end - n_relations + 1:end)'; % taking last 3
+A_estim = Acalc;
+% Have to improve stdest fn
+niterations = 100;
+% for i = 1:niterations
+%     L = stdest(A_estim, Fmeas');% didnt able to improve the function correctly but its the code after improve i
+%     Fmeas = Fmeas/L;
+%     [u s v] = svd(Fmeas, 'econ'); 
+%     A_estim = v(:,end - n_relations + 1:end)';
+%     A_estim = A_estim/L';
+%     Fmeas = Fmeas*L;
+% end
+% 
+% theta = subspace(A_estim', Atrue')
+% Fscaled = Fmeas/L;
+% covar = cov(Fscaled);
+% eigenvalues = eigs(covar)
+% % 

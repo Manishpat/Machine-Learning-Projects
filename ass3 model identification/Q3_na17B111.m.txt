@@ -1,0 +1,99 @@
+%%NA17B111
+% PROBLEM SOLUTION 3-
+
+clc
+load('C:\Users\Manish Patidar\Desktop\CH5440-master\Inorfull.mat')
+
+%%
+% 3(a)
+% WAVELENGTH AT WHICH PURE SPECIES HAVE MAXIMUM ABSORBANCE
+[Pure_CoMax, i] = max(PureCo);
+[Pure_NiMax, j] = max(PureNi);
+[Pure_CrMax, k] = max(PureCr);
+
+Z_DAT=[];
+C_DAT=[];
+for i=0:25
+    Z_DAT = [Z_DAT ; DATA(i*5+1,:)];
+    C_DAT = [C_DAT ; CONC(i*5+1,:)];
+end
+
+L_Max =[Pure_CoMax Pure_NiMax Pure_CrMax]
+Z3 = zeros(25,3);
+C3 = zeros(25,3);
+for a=0:24
+    Z3(a+1,:) = [DATA(a*5+1,i) DATA(a*5+1,j) DATA(a*5+1,k)];
+    C3(a+1,:) = [CONC(a*5+1,1) CONC(a*5+1,2) CONC(a*5+1,3)];
+end
+
+X = inv(Z3'*Z3)*Z3'*C3
+C_cal=[];
+LOO_Z3 = zeros(25,3);
+LOO_C3 = zeros(25,3);
+for a=0:25
+    LOO_Z = [Z_DAT(1:a,:);Z_DAT((a+2):26,:)];
+    LOO_C = [C_DAT(1:a,:);C_DAT((a+2):26,:)];
+    LOO_Z3 = [LOO_Z(:,i) LOO_Z(:,j) LOO_Z(:,k)];
+    LOO_C3 = LOO_C(:,1:3) ;
+    X=inv(LOO_C3'*LOO_C3)*LOO_C3'*LOO_Z3;
+    C = [DATA(a+1,i) DATA(a+1,j) DATA(a+1,k)];
+    C_new=C*inv(X)
+    C_cal = [C_cal; C_new];
+end
+RMSE=sqrt(sum(sum((C_DAT - C_cal).^2))/(26*3))
+
+%%
+% 3(b)
+RMSE=[];
+
+for i=1:5
+    C_cal=[];
+    for j=1:26
+        LOO_Z = [Z_DAT(1:(j-1),:);Z_DAT((j+1):26,:)];
+        LOO_C = [C_DAT(1:(j-1),:);C_DAT((j+1):26,:)];
+        [u s v]=svd(LOO_Z,0);
+        C_cal = [C_cal; Z_DAT(j,:)*v(:,1:i)*(pinv(LOO_Z*v(:,1:i))*LOO_C)];
+    end
+   
+    RMSE=[RMSE,sqrt(sum(sum((C_DAT - C_cal).^2))/(26*3))];
+end
+fprintf('NUMBER OF PC- RMSE \n');
+for i=1:5
+    fprintf('   %d -%f  \n',i,RMSE(i));
+end
+figure(1)
+plot(RMSE,'*-');
+xlabel('No. of PC')
+ylabel('Error')
+%%
+% NO OF PC"S can bE 3,4 or 5.
+%%
+% 3(c)
+Zsdt=[];
+for i=0:25
+    Zsdt = [Zsdt ; std(DATA(i*5+1:i*5+5,:))];
+end
+for i=0:25
+    Zs(i+1,:) = Z_DAT(i+1,:)./mean (Zsdt) ;
+end
+RMSE_N=[];
+for i=1:5
+    C_cal1=[];
+    for j=1:26
+        LOO_Z = [Zs(1:(j-1),:);Zs((j+1):26,:)];
+        LOO_C = [C_DAT(1:(j-1),:);C_DAT((j+1):26,:)];
+        [u s v]=svd(LOO_Z,0);
+        C_cal1 = [C_cal1; Zs(j,:)*v(:,1:i)*(pinv(LOO_Z*v(:,1:i))*LOO_C)];
+    end
+    RMSE_N=[RMSE_N,sqrt(sum(sum(( C_DAT - C_cal1).^2))/(26*3))];
+end
+fprintf('no.of PC  =>    RMSE \n');
+for i=1:5
+    fprintf('   %d- %f  \n',i,RMSE_N(i));
+end
+figure(2)
+plot(RMSE_N,'*-');
+xlabel('No. of PC')
+ylabel('Erro')
+%%
+%now we can tel therre are 3 species.
