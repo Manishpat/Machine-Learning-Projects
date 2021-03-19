@@ -1,0 +1,124 @@
+Repmat = zeros(77760,15);
+fullZ = zeros(77760,11,15);
+for k = 1:15
+    A = zeros(77760,11);
+    for i = 1:11
+        a = 'ubject';
+        c = '.png';
+        if i == 1
+            b = 'cl';
+            if k <= 9
+                a = strcat('0',num2str(k));                
+            else
+                a = num2str(k);
+            end
+        elseif i == 2
+            b = 'glass';
+            if k <= 9
+                a = strcat('0',num2str(k));                
+            else
+                a = num2str(k);
+            end
+        elseif i == 3
+            b = 'happy';
+            if k <= 9
+                a = strcat('0',num2str(k));                
+            else
+                a = num2str(k);
+            end
+        elseif i == 4
+            b = 'll';
+            if k <= 9
+                a = strcat('0',num2str(k));                
+            else
+                a = num2str(k);
+            end
+        elseif i == 5
+            b = 'ng';
+            if k <= 9
+                a = strcat('0',num2str(k));                
+            else
+                a = num2str(k);
+            end
+        elseif i == 6
+            b = 'norm';
+            if k <= 9
+                a = strcat('0',num2str(k));                
+            else
+                a = num2str(k);
+            end
+        elseif i == 7
+            c = '.rightlight';
+            if k <= 9
+                b = strcat('0',num2str(k));                
+            else
+                b = num2str(k);
+            end
+        elseif i == 8
+            c = '.sad';
+            if k <= 9
+                b = strcat('0',num2str(k));                
+            else
+                b = num2str(k);
+            end
+        elseif i == 9
+            c = '.sleepy';
+            if k <= 9
+                b = strcat('0',num2str(k));                
+            else
+                b = num2str(k);
+            end
+        elseif i == 10
+            c = '.surprised';
+            if k <= 9
+                b = strcat('0',num2str(k));                
+            else
+                b = num2str(k);
+            end
+        elseif i == 11
+            c = '.wink';
+            if k <= 9
+                b = strcat('0',num2str(k));                
+            else
+                b = num2str(k);
+            end
+        end
+        path = strcat('C:\Users\Manish Patidar\Desktop\CH5440-master\Assignment2\yalefaces\s',a,b,c);
+        img = imread(path);
+        A(:,i) = reshape(img,[77760 1]);
+        fullZ(:,i,k) = A(:,i);
+    end
+    Xs = A-mean(A,2);
+    Sxs =Xs'*Xs;
+    [v, d] = eig(Sxs);
+    vmax = v(:,11);
+    Repmat(:,k) = Xs*vmax;
+end
+Repmat=Repmat./max(Repmat);
+
+countpred = 0;
+
+for k = 1:15
+k=1
+    for i = 1:11
+        min_norml2 = Inf;
+        index=-1;
+        
+        for j = 1:15
+            norml2 = norm((fullZ(:,i,k)-Repmat(:,j)),2);
+            if min_norml2>norml2
+                min_norml2=norml2;
+                index=j;
+            end
+        end
+        if index==k
+            countpred=countpred+1;
+        end
+    end
+end
+
+                
+        
+        
+        
+        
